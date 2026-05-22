@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ClariFi — AI Money Coach</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root{--bg:#07090F;--surface:#0E1119;--card:#141720;--border:#1E2333;--accent:#0FF4C6;--warn:#F59E0B;--muted:#4B5563;--sub:#8892A4;--text:#E8EDF5;--white:#FFFFFF;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Lato',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+  .logo-wrap{display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#0BB894);display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .logo-text{font-family:'Playfair Display',serif;font-weight:900;font-size:17px;color:var(--white);}
+  .logo-text span{color:var(--accent);}
+  .logo-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1.5px;margin-top:1px;}
+  .tabs{display:flex;gap:4px;background:var(--card);padding:4px;border-radius:8px;border:1px solid var(--border);}
+  .tab{padding:5px 14px;border-radius:6px;border:none;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;transition:all 0.15s;background:transparent;color:var(--sub);}
+  .tab.active{background:var(--accent);color:var(--bg);}
+  .score-badge{text-align:right;}
+  .score-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;}
+  .score-num{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--muted);}
+  #chat-view,#dash-view{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .hidden{display:none!important;}
+  #messages{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:14px;}
+  .msg{display:flex;gap:10px;align-items:flex-end;}
+  .msg.u{flex-direction:row-reverse;}
+  .av{width:30px;height:30px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,var(--accent),#0BB894);display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .bw{max-width:75%;display:flex;flex-direction:column;gap:3px;}
+  .msg.u .bw{align-items:flex-end;}
+  .bb{padding:10px 14px;font-size:14px;line-height:1.65;white-space:pre-wrap;word-break:break-word;}
+  .bb.bot{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:4px 12px 12px 12px;}
+  .bb.usr{background:var(--accent);color:var(--bg);border-radius:12px 4px 12px 12px;font-weight:500;}
+  .ts{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
+  .typing{display:flex;gap:10px;align-items:flex-end;}
+  .tdots{display:flex;gap:5px;align-items:center;background:var(--card);border:1px solid var(--border);padding:12px 16px;border-radius:4px 12px 12px 12px;}
+  .td{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:bnc 1.2s ease-in-out infinite;}
+  .td:nth-child(2){animation-delay:.2s;}.td:nth-child(3){animation-delay:.4s;}
+  @keyframes bnc{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+  #sugg{padding:0 16px 10px;display:flex;gap:8px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
+  #sugg::-webkit-scrollbar{display:none;}
+  .sg{white-space:nowrap;padding:6px 13px;background:var(--card);border:1px solid var(--border);border-radius:20px;color:var(--sub);font-size:12px;cursor:pointer;font-family:inherit;transition:all 0.15s;flex-shrink:0;}
+  .sg:hover{border-color:var(--accent);color:var(--accent);}
+  #ibar{padding:10px 16px 14px;background:var(--surface);border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;flex-shrink:0;}
+  #inp{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.5;transition:border-color 0.15s;}
+  #inp:focus{border-color:var(--accent);}
+  #sbtn{width:42px;height:42px;border-radius:10px;border:none;background:var(--accent);color:var(--bg);font-size:18px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  #sbtn:disabled{background:var(--border);cursor:not-allowed;opacity:.5;}
+  #dash-view{overflow-y:auto;padding:16px;gap:12px;}
+  .dc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;}
+  .dlbl{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:14px;}
+  .sbig{font-family:'IBM Plex Mono',monospace;font-size:64px;font-weight:700;line-height:1;color:var(--muted);}
+  .sbar-w{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:14px;}
+  .sbar-f{height:100%;background:linear-gradient(90deg,#3B82F6,var(--accent));border-radius:4px;transition:width 1s ease;width:0%;}
+  .sbar-l{display:flex;justify-content:space-between;margin-top:5px;}
+  .sbar-l span{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);}
+  .sgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
+  .sm{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center;}
+  .sm-ic{font-size:18px;}
+  .sm-v{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;margin:4px 0 2px;color:var(--muted);}
+  .sm-l{font-size:11px;color:var(--muted);}
+  .cr{margin-bottom:12px;}
+  .ct{display:flex;justify-content:space-between;margin-bottom:5px;}
+  .cn{font-size:13px;color:var(--sub);}
+  .cp{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;}
+  .ca{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+  .cb{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+  .cbf{height:100%;border-radius:3px;transition:width .8s ease;}
+  .empty{text-align:center;padding:28px 16px;color:var(--muted);font-size:13px;line-height:1.7;}
+  .ei{font-size:32px;margin-bottom:10px;}
+  .tx{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+  .tx:last-child{border-bottom:none;}
+  .tx-n{font-size:14px;color:var(--text);}
+  .tx-c{font-size:11px;color:var(--muted);margin-top:2px;}
+  .tx-a{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;color:#EF4444;}
+  .tr{display:flex;gap:12px;padding:10px 0;}
+  .tr+.tr{border-top:1px solid var(--border);}
+  .ti{font-size:18px;flex-shrink:0;}
+  .tt{font-size:13px;color:var(--sub);line-height:1.6;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-wrap">
+    <div class="logo-icon">💰</div>
+    <div>
+      <div class="logo-text">Clari<span>Fi</span></div>
+      <div class="logo-sub">AI MONEY COACH</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="goTab('chat',this)">Chat</button>
+    <button class="tab" onclick="goTab('dash',this)">Dashboard</button>
+  </div>
+  <div class="score-badge">
+    <div class="score-lbl">HEALTH SCORE</div>
+    <div class="score-num" id="hs">--</div>
+  </div>
+</header>
+
+<div id="chat-view">
+  <div id="messages"></div>
+  <div id="sugg">
+    <button class="sg" onclick="useSugg(this)">I earn ₦80,000/month. Help me budget.</button>
+    <button class="sg" onclick="useSugg(this)">I spent ₦5,000 on food today.</button>
+    <button class="sg" onclick="useSugg(this)">I want to save ₦50,000 in 3 months.</button>
+    <button class="sg" onclick="useSugg(this)">What is the 50/30/20 rule?</button>
+    <button class="sg" onclick="useSugg(this)">I have no bank account. Can I save?</button>
+  </div>
+  <div id="ibar">
+    <textarea id="inp" rows="1" placeholder="Tell me your income, expenses, or ask anything…"></textarea>
+    <button id="sbtn" onclick="send()" disabled>↑</button>
+  </div>
+</div>
+
+<div id="dash-view" class="hidden">
+  <div class="dc">
+    <div class="dlbl">FINANCIAL HEALTH SCORE</div>
+    <div style="display:flex;align-items:flex-end;gap:14px">
+      <div class="sbig" id="ds">--</div>
+      <div style="padding-bottom:8px">
+        <div id="dstat" style="font-size:13px;font-weight:700;color:var(--muted)">Start chatting to see your score</div>
+        <div style="font-size:12px;color:var(--muted)">out of 100</div>
+      </div>
+    </div>
+    <div class="sbar-w"><div class="sbar-f" id="sb"></div></div>
+    <div class="sbar-l"><span>At Risk</span><span>Fair</span><span>Good</span><span>Excellent</span></div>
+  </div>
+  <div class="sgrid">
+    <div class="sm"><div class="sm-ic">💬</div><div class="sm-v" id="sv1">0</div><div class="sm-l">Chats</div></div>
+    <div class="sm"><div class="sm-ic">💸</div><div class="sm-v" id="sv2">0</div><div class="sm-l">Expenses</div></div>
+    <div class="sm"><div class="sm-ic">💰</div><div class="sm-v" id="sv3">₦0</div><div class="sm-l">Income</div></div>
+  </div>
+  <div class="dc">
+    <div class="dlbl">SPENDING BY CATEGORY</div>
+    <div id="cats"><div class="empty"><div class="ei">📊</div>No spending data yet.<br/>Mention expenses in the chat and they appear here automatically.</div></div>
+  </div>
+  <div class="dc">
+    <div class="dlbl">RECENT TRANSACTIONS</div>
+    <div id="txs"><div class="empty"><div class="ei">🧾</div>No transactions yet.<br/>Try saying "I spent ₦3,000 on transport" in the chat.</div></div>
+  </div>
+  <div class="dc" style="margin-bottom:4px">
+    <div class="dlbl">QUICK TIPS</div>
+    <div class="tr"><span class="ti">💡</span><span class="tt">Track every expense for 7 days. Awareness alone reduces spending by 15%.</span></div>
+    <div class="tr"><span class="ti">🏦</span><span class="tt">No bank account? Use mobile money like OPay or PalmPay as your savings wallet.</span></div>
+    <div class="tr"><span class="ti">🎯</span><span class="tt">Save before you spend. Move savings on payday, not at month end.</span></div>
+  </div>
+</div>
+
+<script>
+const SYS=`You are ClariFi, a warm practical AI financial coach for everyday people including the underbanked in West Africa.
+
+After EVERY response append this data block at the very end on its own line:
+<<<JSON{"income":0,"expenses":[],"savings":0}JSON>>>
+
+JSON rules:
+- income: monthly income as number (0 if not mentioned this message)
+- expenses: array of {name,amount,category} for expenses mentioned this message
+- savings: savings goal as number (0 if not mentioned)
+- category must be one of: Food, Transport, Rent, Utilities, Health, Education, Entertainment, Savings, Other
+- ALWAYS include this block even if all zeros
+
+Coaching style: warm, encouraging, concise 3-5 sentences, give real numbers and actionable steps.`;
+
+let hist=[],chats=0,loading=false,income=0,savingsGoal=0,txList=[],catMap={};
+const COLORS={Food:"#0FF4C6",Transport:"#3B82F6",Rent:"#8B5CF6",Utilities:"#F59E0B",Health:"#EF4444",Education:"#10B981",Entertainment:"#EC4899",Savings:"#F59E0B",Other:"#6B7280"};
+const msgEl=document.getElementById('messages');
+const inpEl=document.getElementById('inp');
+const sBtn=document.getElementById('sbtn');
+
+addMsg('bot',"Hey! I'm ClariFi, your personal money coach.\n\nShare your income and expenses with me and I'll build your real budget — everything you tell me shows up live on the Dashboard.\n\nWhat's your monthly income?");
+
+inpEl.addEventListener('input',()=>{sBtn.disabled=!inpEl.value.trim()||loading;inpEl.style.height='auto';inpEl.style.height=Math.min(inpEl.scrollHeight,120)+'px';});
+inpEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!sBtn.disabled)send();}});
+
+function goTab(t,btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');document.getElementById('chat-view').classList.toggle('hidden',t!=='chat');document.getElementById('dash-view').classList.toggle('hidden',t!=='dash');}
+function now(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function addMsg(role,text){const isBot=role==='bot';const d=document.createElement('div');d.className='msg'+(isBot?'':' u');d.innerHTML=`${isBot?'<div class="av">💰</div>':''}<div class="bw"><div class="bb ${isBot?'bot':'usr'}">${esc(text)}</div><div class="ts">${now()}</div></div>`;msgEl.appendChild(d);msgEl.scrollTop=msgEl.scrollHeight;}
+function showTyping(){const d=document.createElement('div');d.className='typing';d.id='typ';d.innerHTML='<div class="av">💰</div><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div>';msgEl.appendChild(d);msgEl.scrollTop=msgEl.scrollHeight;}
+function hideTyping(){const t=document.getElementById('typ');if(t)t.remove();}
+function useSugg(btn){inpEl.value=btn.textContent;document.getElementById('sugg').style.display='none';send();}
+function parseData(text){try{const m=text.match(/<<<JSON(\{.*?\})JSON>>>/s);return m?JSON.parse(m[1]):null;}catch(e){return null;}}
+function cleanText(text){return text.replace(/<<<JSON\{.*?\}JSON>>>/s,'').trim();}
+
+function refreshDash(data){
+  if(!data)return;
+  if(data.income>0)income=data.income;
+  if(data.savings>0)savingsGoal=data.savings;
+  if(data.expenses&&data.expenses.length>0){data.expenses.forEach(e=>{txList.unshift({name:e.name,amount:e.amount,cat:e.category||'Other',time:now()});const c=e.category||'Other';catMap[c]=(catMap[c]||0)+e.amount;});}
+  const totalExp=Object.values(catMap).reduce((a,b)=>a+b,0);
+  let score=0;
+  if(income>0){const sr=Math.max(0,(income-totalExp)/income);score=Math.min(100,Math.round(30+(sr*50)+(chats*2)+(savingsGoal>0?10:0)));}else if(chats>0){score=Math.min(35,chats*4);}
+  const col=score>=70?'var(--accent)':score>=40?'var(--warn)':'#EF4444';
+  const lbl=score>=70?'Good Progress 🎉':score>=40?'Getting There 💪':'Needs Attention';
+  document.getElementById('hs').textContent=score>0?score:'--';
+  document.getElementById('hs').style.color=score>0?col:'var(--muted)';
+  document.getElementById('ds').textContent=score>0?score:'--';
+  document.getElementById('ds').style.color=score>0?col:'var(--muted)';
+  document.getElementById('dstat').textContent=score>0?lbl:'Start chatting to see your score';
+  document.getElementById('dstat').style.color=score>0?col:'var(--muted)';
+  document.getElementById('sb').style.width=score+'%';
+  document.getElementById('sv1').textContent=chats;document.getElementById('sv1').style.color='var(--accent)';
+  document.getElementById('sv2').textContent=txList.length;document.getElementById('sv2').style.color=txList.length>0?'#EF4444':'var(--muted)';
+  document.getElementById('sv3').textContent=income>0?'₦'+income.toLocaleString():'₦0';document.getElementById('sv3').style.color=income>0?'var(--accent)':'var(--muted)';
+  const cEl=document.getElementById('cats');
+  if(Object.keys(catMap).length===0){cEl.innerHTML='<div class="empty"><div class="ei">📊</div>No spending data yet.<br/>Mention expenses in the chat.</div>';}
+  else{const tot=Object.values(catMap).reduce((a,b)=>a+b,0);cEl.innerHTML=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).map(([c,a])=>{const pct=tot>0?Math.round((a/tot)*100):0;const col=COLORS[c]||'#6B7280';return`<div class="cr"><div class="ct"><span class="cn">${esc(c)}</span><div><span class="cp" style="color:${col}">${pct}%</span> <span class="ca">₦${a.toLocaleString()}</span></div></div><div class="cb"><div class="cbf" style="width:${pct}%;background:${col}"></div></div></div>`;}).join('');}
+  const tEl=document.getElementById('txs');
+  if(txList.length===0){tEl.innerHTML='<div class="empty"><div class="ei">🧾</div>No transactions yet.<br/>Try: "I spent ₦3,000 on transport"</div>';}
+  else{tEl.innerHTML=txList.slice(0,10).map(t=>`<div class="tx"><div><div class="tx-n">${esc(t.name)}</div><div class="tx-c">${esc(t.cat)} · ${t.time}</div></div><div class="tx-a">-₦${t.amount.toLocaleString()}</div></div>`).join('');}
+}
+
+async function send(){
+  const txt=inpEl.value.trim();if(!txt||loading)return;
+  inpEl.value='';inpEl.style.height='auto';sBtn.disabled=true;loading=true;
+  document.getElementById('sugg').style.display='none';
+  addMsg('usr',txt);hist.push({role:'user',content:txt});showTyping();
+  try{
+    const r=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYS,messages:hist})
+    });
+    const d=await r.json();
+    const raw=d.content?.map(b=>b.text||'').join('')||'Sorry, something went wrong.';
+    const parsed=parseData(raw);const clean=cleanText(raw);
+    hist.push({role:'assistant',content:raw});chats++;
+    refreshDash(parsed);hideTyping();addMsg('bot',clean);
+  }catch(e){hideTyping();addMsg('bot','Connection error. Please try again.');}
+  loading=false;sBtn.disabled=!inpEl.value.trim();
+}
+</script>
+</body>
+</html>
