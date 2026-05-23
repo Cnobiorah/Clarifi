@@ -92,7 +92,6 @@
     <div class="score-num" id="hs">--</div>
   </div>
 </header>
-
 <div id="chat-view">
   <div id="messages"></div>
   <div id="sugg">
@@ -107,7 +106,6 @@
     <button id="sbtn" onclick="send()" disabled>↑</button>
   </div>
 </div>
-
 <div id="dash-view" class="hidden">
   <div class="dc">
     <div class="dlbl">FINANCIAL HEALTH SCORE</div>
@@ -141,33 +139,15 @@
     <div class="tr"><span class="ti">🎯</span><span class="tt">Save before you spend. Move savings on payday, not month end.</span></div>
   </div>
 </div>
-
 <script>
-const SYS=`You are ClariFi, a warm practical AI financial coach for everyday people including the underbanked in West Africa.
-
-After EVERY response append this data block at the very end:
-<<<JSON{"income":0,"expenses":[],"savings":0}JSON>>>
-
-JSON rules:
-- income: monthly income as number (0 if not mentioned this message)
-- expenses: array of {name,amount,category} for expenses mentioned this message
-- savings: savings goal as number (0 if not mentioned)
-- category must be one of: Food, Transport, Rent, Utilities, Health, Education, Entertainment, Savings, Other
-- ALWAYS include this block even if all zeros
-
-Style: warm, encouraging, concise 3-5 sentences, give real naira numbers and actionable steps.`;
-
+const KEY="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";
+const SYS=`You are ClariFi, a warm practical AI financial coach for everyday people including the underbanked in West Africa. After EVERY response append: <<<JSON{"income":0,"expenses":[],"savings":0}JSON>>> JSON rules: income=monthly income as number, expenses=array of {name,amount,category}, savings=savings goal. Categories: Food/Transport/Rent/Utilities/Health/Education/Entertainment/Savings/Other. ALWAYS include block even if zeros. Style: warm, encouraging, concise, real naira numbers.`;
 let hist=[],chats=0,loading=false,income=0,savingsGoal=0,txList=[],catMap={};
 const COLORS={Food:"#0FF4C6",Transport:"#3B82F6",Rent:"#8B5CF6",Utilities:"#F59E0B",Health:"#EF4444",Education:"#10B981",Entertainment:"#EC4899",Savings:"#F59E0B",Other:"#6B7280"};
-const msgEl=document.getElementById('messages');
-const inpEl=document.getElementById('inp');
-const sBtn=document.getElementById('sbtn');
-
-addMsg('bot',"Hey! I'm ClariFi, your personal money coach.\n\nShare your income and expenses with me and I'll build your real budget — everything you tell me shows up live on the Dashboard.\n\nWhat's your monthly income?");
-
+const msgEl=document.getElementById('messages'),inpEl=document.getElementById('inp'),sBtn=document.getElementById('sbtn');
+addMsg('bot',"Hey! I'm ClariFi, your personal money coach.\n\nShare your income and expenses and I'll build your real budget — everything shows up live on the Dashboard.\n\nWhat's your monthly income?");
 inpEl.addEventListener('input',()=>{sBtn.disabled=!inpEl.value.trim()||loading;inpEl.style.height='auto';inpEl.style.height=Math.min(inpEl.scrollHeight,120)+'px';});
 inpEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!sBtn.disabled)send();}});
-
 function goTab(t,btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');document.getElementById('chat-view').classList.toggle('hidden',t!=='chat');document.getElementById('dash-view').classList.toggle('hidden',t!=='dash');}
 function now(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -177,7 +157,6 @@ function hideTyping(){const t=document.getElementById('typ');if(t)t.remove();}
 function useSugg(btn){inpEl.value=btn.textContent;document.getElementById('sugg').style.display='none';send();}
 function parseData(text){try{const m=text.match(/<<<JSON(\{.*?\})JSON>>>/s);return m?JSON.parse(m[1]):null;}catch(e){return null;}}
 function cleanText(text){return text.replace(/<<<JSON\{.*?\}JSON>>>/s,'').trim();}
-
 function refreshDash(data){
   if(!data)return;
   if(data.income>0)income=data.income;
@@ -185,16 +164,12 @@ function refreshDash(data){
   if(data.expenses&&data.expenses.length>0){data.expenses.forEach(e=>{txList.unshift({name:e.name,amount:e.amount,cat:e.category||'Other',time:now()});const c=e.category||'Other';catMap[c]=(catMap[c]||0)+e.amount;});}
   const totalExp=Object.values(catMap).reduce((a,b)=>a+b,0);
   let score=0;
-  if(income>0){const sr=Math.max(0,(income-totalExp)/income);score=Math.min(100,Math.round(30+(sr*50)+(chats*2)+(savingsGoal>0?10:0)));}
-  else if(chats>0){score=Math.min(35,chats*4);}
+  if(income>0){const sr=Math.max(0,(income-totalExp)/income);score=Math.min(100,Math.round(30+(sr*50)+(chats*2)+(savingsGoal>0?10:0)));}else if(chats>0){score=Math.min(35,chats*4);}
   const col=score>=70?'var(--accent)':score>=40?'var(--warn)':'#EF4444';
   const lbl=score>=70?'Good Progress 🎉':score>=40?'Getting There 💪':'Needs Attention';
-  document.getElementById('hs').textContent=score>0?score:'--';
-  document.getElementById('hs').style.color=score>0?col:'var(--muted)';
-  document.getElementById('ds').textContent=score>0?score:'--';
-  document.getElementById('ds').style.color=score>0?col:'var(--muted)';
-  document.getElementById('dstat').textContent=score>0?lbl:'Start chatting to see your score';
-  document.getElementById('dstat').style.color=score>0?col:'var(--muted)';
+  document.getElementById('hs').textContent=score>0?score:'--';document.getElementById('hs').style.color=score>0?col:'var(--muted)';
+  document.getElementById('ds').textContent=score>0?score:'--';document.getElementById('ds').style.color=score>0?col:'var(--muted)';
+  document.getElementById('dstat').textContent=score>0?lbl:'Start chatting to see your score';document.getElementById('dstat').style.color=score>0?col:'var(--muted)';
   document.getElementById('sb').style.width=score+'%';
   document.getElementById('sv1').textContent=chats;document.getElementById('sv1').style.color='var(--accent)';
   document.getElementById('sv2').textContent=txList.length;document.getElementById('sv2').style.color=txList.length>0?'#EF4444':'var(--muted)';
@@ -206,27 +181,23 @@ function refreshDash(data){
   if(txList.length===0){tEl.innerHTML='<div class="empty"><div class="ei">🧾</div>No transactions yet.<br/>Try: "I spent ₦3,000 on transport"</div>';}
   else{tEl.innerHTML=txList.slice(0,10).map(t=>`<div class="tx"><div><div class="tx-n">${esc(t.name)}</div><div class="tx-c">${esc(t.cat)} · ${t.time}</div></div><div class="tx-a">-₦${t.amount.toLocaleString()}</div></div>`).join('');}
 }
-
 async function send(){
   const txt=inpEl.value.trim();if(!txt||loading)return;
   inpEl.value='';inpEl.style.height='auto';sBtn.disabled=true;loading=true;
   document.getElementById('sugg').style.display='none';
   addMsg('usr',txt);hist.push({role:'user',content:txt});showTyping();
   try{
-    const r=await fetch('/api/chat',{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,system:SYS,messages:hist})
     });
-    if(!r.ok){const e=await r.json();throw new Error(e.error||'Server error '+r.status);}
     const d=await r.json();
     const raw=d.content?.map(b=>b.text||'').join('')||'Sorry, something went wrong.';
     const parsed=parseData(raw);const clean=cleanText(raw);
     hist.push({role:'assistant',content:raw});chats++;
     refreshDash(parsed);hideTyping();addMsg('bot',clean);
-  }catch(e){
-    hideTyping();addMsg('bot','Error: '+e.message+'\n\nPlease try again.');
-  }
+  }catch(e){hideTyping();addMsg('bot','Error: '+e.message);}
   loading=false;sBtn.disabled=!inpEl.value.trim();
 }
 </script>
