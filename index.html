@@ -57,27 +57,21 @@
   .sbar-l span{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);}
   .sgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
   .sm{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center;}
-  .sm-ic{font-size:18px;}
-  .sm-v{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;margin:4px 0 2px;color:var(--muted);}
+  .sm-ic{font-size:18px;}.sm-v{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;margin:4px 0 2px;color:var(--muted);}
   .sm-l{font-size:11px;color:var(--muted);}
-  .cr{margin-bottom:12px;}
-  .ct{display:flex;justify-content:space-between;margin-bottom:5px;}
-  .cn{font-size:13px;color:var(--sub);}
-  .cp{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;}
+  .cr{margin-bottom:12px;}.ct{display:flex;justify-content:space-between;margin-bottom:5px;}
+  .cn{font-size:13px;color:var(--sub);}.cp{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;}
   .ca{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
   .cb{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
   .cbf{height:100%;border-radius:3px;transition:width .8s ease;}
   .empty{text-align:center;padding:28px 16px;color:var(--muted);font-size:13px;line-height:1.7;}
   .ei{font-size:32px;margin-bottom:10px;}
   .tx{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
-  .tx:last-child{border-bottom:none;}
-  .tx-n{font-size:14px;color:var(--text);}
+  .tx:last-child{border-bottom:none;}.tx-n{font-size:14px;color:var(--text);}
   .tx-c{font-size:11px;color:var(--muted);margin-top:2px;}
   .tx-a{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;color:#EF4444;}
-  .tr{display:flex;gap:12px;padding:10px 0;}
-  .tr+.tr{border-top:1px solid var(--border);}
-  .ti{font-size:18px;flex-shrink:0;}
-  .tt{font-size:13px;color:var(--sub);line-height:1.6;}
+  .tr{display:flex;gap:12px;padding:10px 0;}.tr+.tr{border-top:1px solid var(--border);}
+  .ti{font-size:18px;flex-shrink:0;}.tt{font-size:13px;color:var(--sub);line-height:1.6;}
 </style>
 </head>
 <body>
@@ -134,24 +128,24 @@
   </div>
   <div class="dc">
     <div class="dlbl">SPENDING BY CATEGORY</div>
-    <div id="cats"><div class="empty"><div class="ei">📊</div>No spending data yet.<br/>Mention expenses in the chat and they appear here automatically.</div></div>
+    <div id="cats"><div class="empty"><div class="ei">📊</div>No spending data yet.<br/>Mention expenses in the chat.</div></div>
   </div>
   <div class="dc">
     <div class="dlbl">RECENT TRANSACTIONS</div>
-    <div id="txs"><div class="empty"><div class="ei">🧾</div>No transactions yet.<br/>Try saying "I spent ₦3,000 on transport" in the chat.</div></div>
+    <div id="txs"><div class="empty"><div class="ei">🧾</div>No transactions yet.<br/>Try: "I spent ₦3,000 on transport"</div></div>
   </div>
   <div class="dc" style="margin-bottom:4px">
     <div class="dlbl">QUICK TIPS</div>
     <div class="tr"><span class="ti">💡</span><span class="tt">Track every expense for 7 days. Awareness alone reduces spending by 15%.</span></div>
-    <div class="tr"><span class="ti">🏦</span><span class="tt">No bank account? Use mobile money like OPay or PalmPay as your savings wallet.</span></div>
-    <div class="tr"><span class="ti">🎯</span><span class="tt">Save before you spend. Move savings on payday, not at month end.</span></div>
+    <div class="tr"><span class="ti">🏦</span><span class="tt">No bank account? Use OPay or PalmPay as your savings wallet.</span></div>
+    <div class="tr"><span class="ti">🎯</span><span class="tt">Save before you spend. Move savings on payday, not month end.</span></div>
   </div>
 </div>
 
 <script>
 const SYS=`You are ClariFi, a warm practical AI financial coach for everyday people including the underbanked in West Africa.
 
-After EVERY response append this data block at the very end on its own line:
+After EVERY response append this data block at the very end:
 <<<JSON{"income":0,"expenses":[],"savings":0}JSON>>>
 
 JSON rules:
@@ -161,7 +155,7 @@ JSON rules:
 - category must be one of: Food, Transport, Rent, Utilities, Health, Education, Entertainment, Savings, Other
 - ALWAYS include this block even if all zeros
 
-Coaching style: warm, encouraging, concise 3-5 sentences, give real numbers and actionable steps.`;
+Style: warm, encouraging, concise 3-5 sentences, give real naira numbers and actionable steps.`;
 
 let hist=[],chats=0,loading=false,income=0,savingsGoal=0,txList=[],catMap={};
 const COLORS={Food:"#0FF4C6",Transport:"#3B82F6",Rent:"#8B5CF6",Utilities:"#F59E0B",Health:"#EF4444",Education:"#10B981",Entertainment:"#EC4899",Savings:"#F59E0B",Other:"#6B7280"};
@@ -191,7 +185,8 @@ function refreshDash(data){
   if(data.expenses&&data.expenses.length>0){data.expenses.forEach(e=>{txList.unshift({name:e.name,amount:e.amount,cat:e.category||'Other',time:now()});const c=e.category||'Other';catMap[c]=(catMap[c]||0)+e.amount;});}
   const totalExp=Object.values(catMap).reduce((a,b)=>a+b,0);
   let score=0;
-  if(income>0){const sr=Math.max(0,(income-totalExp)/income);score=Math.min(100,Math.round(30+(sr*50)+(chats*2)+(savingsGoal>0?10:0)));}else if(chats>0){score=Math.min(35,chats*4);}
+  if(income>0){const sr=Math.max(0,(income-totalExp)/income);score=Math.min(100,Math.round(30+(sr*50)+(chats*2)+(savingsGoal>0?10:0)));}
+  else if(chats>0){score=Math.min(35,chats*4);}
   const col=score>=70?'var(--accent)':score>=40?'var(--warn)':'#EF4444';
   const lbl=score>=70?'Good Progress 🎉':score>=40?'Getting There 💪':'Needs Attention';
   document.getElementById('hs').textContent=score>0?score:'--';
@@ -221,14 +216,17 @@ async function send(){
     const r=await fetch('/api/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYS,messages:hist})
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,system:SYS,messages:hist})
     });
+    if(!r.ok){const e=await r.json();throw new Error(e.error||'Server error '+r.status);}
     const d=await r.json();
     const raw=d.content?.map(b=>b.text||'').join('')||'Sorry, something went wrong.';
     const parsed=parseData(raw);const clean=cleanText(raw);
     hist.push({role:'assistant',content:raw});chats++;
     refreshDash(parsed);hideTyping();addMsg('bot',clean);
-  }catch(e){hideTyping();addMsg('bot','Connection error. Please try again.');}
+  }catch(e){
+    hideTyping();addMsg('bot','Error: '+e.message+'\n\nPlease try again.');
+  }
   loading=false;sBtn.disabled=!inpEl.value.trim();
 }
 </script>
